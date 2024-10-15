@@ -1,0 +1,73 @@
+@startuml DiagramSequence
+actor User
+participant "DnaController" as Controller
+participant "DnaService" as Service
+participant "DnaRepository" as Repository
+participant "DnaValidator" as Validator
+participant "DnaDto" as DnaDto
+participant "StatsDto" as Stats
+participant "ParcialMutantesApplicationTests" as Test
+
+== POST /mutant ==
+
+User -> Controller: POST /mutant\nDnaDto
+Controller -> Validator: isValidNxNMatrix(dna)
+Validator --> Controller: boolean
+Controller -> Validator: isValidDnaLetters(dna)
+Validator --> Controller: boolean
+Controller -> Repository: existsByDna(dna)
+Repository --> Controller: boolean
+Controller -> Service: isMutant(dna)
+Service -> Validator: isMutant(dnaMatrix)
+Validator --> Service: boolean
+Service -> Repository: save(dnaEntity)
+Repository --> Service: void
+Service --> Controller: boolean
+Controller --> User: ResponseEntity<String>
+
+== GET /stats ==
+
+User -> Controller: GET /stats
+Controller -> Service: getStats()
+Service -> Repository: countByIsMutant(true)
+Repository --> Service: countMutant
+Service -> Repository: countByIsMutant(false)
+Repository --> Service: countHuman
+Service -> Stats: new StatsDto(countMutant, countHuman, ratio)
+Service --> Controller: StatsDto
+Controller --> User: ResponseEntity<StatsDto>
+
+== Tests ==
+
+User -> Test: testIsMutantHorizontal()
+Test -> DnaDto: setDna(["TTGCGA", "CAGTGC", "TTATGT", "AGAAGG", "CCCCTA", "TCACTG"])
+Test -> Service: isMutant(dnaDto.getDna())
+Service --> Test: boolean (true)
+
+User -> Test: testIsMutantVertical()
+Test -> DnaDto: setDna(["TTGCGA", "TAGTGC", "TTATGT", "TGAAGG", "CGCCTA", "TCACTG"])
+Test -> Service: isMutant(dnaDto.getDna())
+Service --> Test: boolean (true)
+
+User -> Test: testIsMutantDiagonal()
+Test -> DnaDto: setDna(["ATGCGA","CAGTTC","TTATGT","AGAATG","CGCTTA", "TCTCTG"])
+Test -> Service: isMutant(dnaDto.getDna())
+Service --> Test: boolean (true)
+
+User -> Test: testIsNotMutant()
+Test -> DnaDto: setDna(["TTGCGA", "CAGTCC", "TTATGT", "AGAAGG", "CGCCTA", "TCACTG"])
+Test -> Service: isMutant(dnaDto.getDna())
+Service --> Test: boolean (false)
+
+User -> Test: testGetStats()
+Test -> Service: getStats()
+Service -> Repository: countByIsMutant(true)
+Repository --> Service: 1
+Service -> Repository: countByIsMutant(false)
+Repository --> Service: 1
+Service -> Stats: new StatsDto(1, 1, 1.0)
+Service --> Test: StatsDto
+
+Test --> User: assertEquals() (results)
+
+@enduml
