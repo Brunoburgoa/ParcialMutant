@@ -9,5 +9,8 @@ public class StatsDto {
     private double ratio;
 
     public StatsDto(long countMutant, long countHuman, double ratio) {
+        this.countMutantDna = countMutant;
+        this.countHumanDna = countHuman;
+        this.ratio = ratio;
     }
 }

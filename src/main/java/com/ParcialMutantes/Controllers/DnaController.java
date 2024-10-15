@@ -1,6 +1,5 @@
 package com.ParcialMutantes.Controllers;
 
-
 import com.ParcialMutantes.Dto.DnaDto;
 import com.ParcialMutantes.Repository.DnaRepository;
 import com.ParcialMutantes.Service.DnaService;
@@ -21,35 +20,36 @@ public class DnaController {
     private DnaService dnaService;
     @Autowired
     private DnaRepository dnaRepository;
-    @PostMapping("/post")
+
+    @PostMapping
     public ResponseEntity<String> isMutant(@RequestBody DnaDto dnaDto) {
         try {
             String[] dna = dnaDto.getDna();
 
             // Validar si es una matriz NxN
             if (!DnaValidator.isValidNxNMatrix(dna)) {
-                return ResponseEntity.badRequest().body("El DNA no es una matriz NxN.");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("El DNA no es una matriz NxN.");
             }
 
             // Validar si contiene solo las letras A, C, G, T
             if (!DnaValidator.isValidDnaLetters(dna)) {
-                return ResponseEntity.badRequest().body("El DNA contiene letras no válidas.");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("El DNA contiene letras no válidas.");
             }
 
             // Verificar si el DNA ya existe
             if (dnaRepository.existsByDna(dna)) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body("El DNA ya ha sido ingresado anteriormente.");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("El DNA ya ha sido ingresado anteriormente.");
             }
 
             // Continuar con el resto de la lógica
             if (dnaService.isMutant(dna)) {
-                return ResponseEntity.ok("Es mutante");
+                return ResponseEntity.status(HttpStatus.OK).body("Es mutante");
             } else {
-                return ResponseEntity.badRequest().body("No es mutante");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No es mutante");
             }
         } catch (IllegalArgumentException e) {
-            // Si el ADN tiene caracteres inválidos, devolvemos un error 400 con el mensaje
-            return ResponseEntity.badRequest().body(e.getMessage());
+            // Si el ADN tiene caracteres inválidos, devolvemos un error 403 con el mensaje
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         }
     }
 }

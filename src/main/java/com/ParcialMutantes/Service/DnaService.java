@@ -16,6 +16,7 @@ public class DnaService {
 
     public boolean isMutant(String[] dna) {
         // Convierte el array de String en un array bidimensional de caracteres
+
         char[][] dnaMatrix = new char[dna.length][dna[0].length()];
         for (int i = 0; i < dna.length; i++) {
             dnaMatrix[i] = dna[i].toCharArray(); // Convierte cada string en un array de chars
